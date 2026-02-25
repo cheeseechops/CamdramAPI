@@ -476,17 +476,26 @@ def main() -> None:
     parser.add_argument(
         "--hydrate-missing-performances",
         action="store_true",
-        help="Fetch show details to backfill missing performance timestamps in existing cache.",
+        help=(
+            "Fetch show details to backfill missing performance timestamps in existing cache. "
+            "Enabled by default on --refresh."
+        ),
     )
     parser.add_argument(
         "--hydrate-missing-societies",
         action="store_true",
-        help="Fetch show details to backfill missing society metadata in existing cache.",
+        help=(
+            "Fetch show details to backfill missing society metadata in existing cache. "
+            "Enabled by default on --refresh."
+        ),
     )
     parser.add_argument(
         "--hydrate-missing-venues",
         action="store_true",
-        help="Fetch show details to backfill missing venue metadata in existing cache.",
+        help=(
+            "Fetch show details to backfill missing venue metadata in existing cache. "
+            "Enabled by default on --refresh."
+        ),
     )
     parser.add_argument(
         "--hydrate-min-year",
@@ -509,6 +518,9 @@ def main() -> None:
     args = parser.parse_args()
 
     force_refresh = args.refresh
+    should_hydrate_performances = args.hydrate_missing_performances or force_refresh
+    should_hydrate_societies = args.hydrate_missing_societies or force_refresh
+    should_hydrate_venues = args.hydrate_missing_venues or force_refresh
 
     from_str = "2000-01-01"
     to_str = datetime.now().strftime("%Y-%m-%d")
@@ -757,6 +769,7 @@ def main() -> None:
     print(f"Found {len(shows)} shows. Fetching roles ({MAX_WORKERS} parallel)...\n")
 
     roles_to_fetch = [s for s in shows if s.get("slug") not in show_roles]
+    should_save_cache = False
     if roles_to_fetch:
         show_roles_lock = threading.Lock()
         completed = [0]
@@ -787,38 +800,40 @@ def main() -> None:
                         completed[0] += 1
                         if completed[0] % 200 == 0:
                             print(f"  Processed {completed[0]}/{len(roles_to_fetch)} shows...")
-        _save_cache(venues, shows, show_roles, from_date=cache_from_str, to_date=cache_to_str)
+        should_save_cache = True
     else:
         print("  All roles loaded from cache.")
-        if args.hydrate_missing_performances:
-            hydrated = _hydrate_missing_performances(
-                shows,
-                show_roles,
-                min_year=max(1900, int(args.hydrate_min_year)) if args.hydrate_min_year else None,
-            )
-            print(f"Hydrated {hydrated} shows with missing performance timestamps.")
-        if args.hydrate_missing_societies:
-            hydrated_societies = _hydrate_missing_societies(
-                shows,
-                show_roles,
-                min_year=max(1900, int(args.hydrate_min_year)) if args.hydrate_min_year else None,
-            )
-            print(f"Hydrated {hydrated_societies} shows with missing society metadata.")
-        if args.hydrate_missing_venues:
-            hydrated_venues = _hydrate_missing_venues(
-                shows,
-                show_roles,
-                min_year=max(1900, int(args.hydrate_min_year)) if args.hydrate_min_year else None,
-            )
-            print(f"Hydrated {hydrated_venues} shows with missing venue metadata.")
-        if (
-            args.extend_back_to
-            or args.update_current_future
-            or args.hydrate_missing_performances
-            or args.hydrate_missing_societies
-            or args.hydrate_missing_venues
-        ):
-            _save_cache(venues, shows, show_roles, from_date=cache_from_str, to_date=cache_to_str)
+    hydrate_min_year = max(1900, int(args.hydrate_min_year)) if args.hydrate_min_year else None
+    if should_hydrate_performances:
+        hydrated = _hydrate_missing_performances(
+            shows,
+            show_roles,
+            min_year=hydrate_min_year,
+        )
+        print(f"Hydrated {hydrated} shows with missing performance timestamps.")
+        should_save_cache = True
+    if should_hydrate_societies:
+        hydrated_societies = _hydrate_missing_societies(
+            shows,
+            show_roles,
+            min_year=hydrate_min_year,
+        )
+        print(f"Hydrated {hydrated_societies} shows with missing society metadata.")
+        should_save_cache = True
+    if should_hydrate_venues:
+        hydrated_venues = _hydrate_missing_venues(
+            shows,
+            show_roles,
+            min_year=hydrate_min_year,
+        )
+        print(f"Hydrated {hydrated_venues} shows with missing venue metadata.")
+        should_save_cache = True
+
+    if args.extend_back_to or args.update_current_future:
+        should_save_cache = True
+
+    if should_save_cache:
+        _save_cache(venues, shows, show_roles, from_date=cache_from_str, to_date=cache_to_str)
 
     # Count roles per person
     person_role_count: dict[int, int] = {}
