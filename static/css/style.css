@@ -1,5 +1,13 @@
 /* Camdram Rankings — theatre playbill feel, warm and readable */
 
+@font-face {
+  font-family: "Soul Of Vodka";
+  src: url("/static/fonts/the%20soul%20of%20vodka.ttf") format("truetype");
+  font-style: normal;
+  font-weight: 400;
+  font-display: swap;
+}
+
 :root {
   --bg: #fff9e3;
   --bg-card: #ffffff;
@@ -114,9 +122,9 @@ body {
 }
 
 .site-title {
-  font-family: var(--font-serif);
+  font-family: "Soul Of Vodka", var(--font-serif);
   font-size: 2rem;
-  font-weight: 600;
+  font-weight: 400;
   margin: 0;
   letter-spacing: 0.04em;
   line-height: 1;
