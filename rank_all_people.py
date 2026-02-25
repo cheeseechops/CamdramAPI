@@ -500,8 +500,11 @@ def main() -> None:
     parser.add_argument(
         "--hydrate-min-year",
         type=int,
-        default=2023,
-        help="Only hydrate shows with slug year >= this value (default: 2023).",
+        default=DEFAULT_SEARCH_BACK_TO_YEAR,
+        help=(
+            "Only hydrate shows with slug year >= this value "
+            f"(default: {DEFAULT_SEARCH_BACK_TO_YEAR})."
+        ),
     )
     parser.add_argument(
         "--lookback-days",
