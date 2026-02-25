@@ -1,0 +1,4 @@
+requests>=2.28.0
+flask>=3.0.0
+# Optional: faster JSON parse for large cache (pip install orjson)
+# orjson>=3.9.0

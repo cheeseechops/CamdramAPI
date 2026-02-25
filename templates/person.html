@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block title %}{{ stats.name }} — Camdram Stats{% endblock %}
+{% block content %}
+  <section class="person-page">
+    <div class="panel-header">
+      <h2>{{ stats.name }}</h2>
+      {% if stats.camdram_url %}
+      <a class="person-camdram-link" href="{{ stats.camdram_url }}" target="_blank" rel="noopener">View on Camdram</a>
+      {% endif %}
+    </div>
+
+    <div class="person-stats-grid">
+      <article class="person-stat-card">
+        <h3>Overview</h3>
+        <ul class="person-kv-list">
+          <li><span>Total credits</span><strong>{{ stats.total_credits }}</strong></li>
+          <li><span>Unique shows</span><strong>{{ stats.unique_shows }}</strong></li>
+          <li><span>Unique roles</span><strong>{{ stats.unique_roles }}</strong></li>
+          <li><span>First credit</span><strong>{{ stats.first_credit_date }}</strong></li>
+          <li><span>Last credit</span><strong>{{ stats.last_credit_date }}</strong></li>
+          <li><span>Credits / year</span><strong>{{ stats.credits_per_year }}</strong></li>
+        </ul>
+      </article>
+
+      <article class="person-stat-card">
+        <h3>Top Roles</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Role</th><th>Count</th></tr></thead>
+            <tbody>
+              {% for role, count in stats.top_roles %}
+              <tr><td class="num">{{ loop.index }}</td><td>{{ role }}</td><td class="num">{{ count }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="person-stat-card">
+        <h3>Top Societies</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Society</th><th>Shows</th></tr></thead>
+            <tbody>
+              {% for name, count in stats.top_societies %}
+              <tr><td class="num">{{ loop.index }}</td><td>{{ name }}</td><td class="num">{{ count }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="person-stat-card">
+        <h3>Top Venues</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>#</th><th>Venue</th><th>Shows</th></tr></thead>
+            <tbody>
+              {% for name, count in stats.top_venues %}
+              <tr><td class="num">{{ loop.index }}</td><td>{{ name }}</td><td class="num">{{ count }}</td></tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </article>
+
+      <article class="person-stat-card person-stat-card--wide">
+        <h3>Recent Credits</h3>
+        <div class="table-wrap">
+          <table class="data-table">
+            <thead><tr><th>Date</th><th>Show</th><th>Roles in show</th></tr></thead>
+            <tbody>
+              {% for row in stats.recent_shows %}
+              <tr>
+                <td class="num">{{ row.last_date or "—" }}</td>
+                <td><a href="https://www.camdram.net/shows/{{ row.slug }}" target="_blank" rel="noopener">{{ row.name }}</a></td>
+                <td>{{ row.roles|join(", ") }}</td>
+              </tr>
+              {% endfor %}
+            </tbody>
+          </table>
+        </div>
+      </article>
+    </div>
+  </section>
+{% endblock %}

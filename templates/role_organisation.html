@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Role Organisation — Camdram Rankings{% endblock %}
+{% block content %}
+  <section class="role-org-page">
+    <h2>Role Organisation</h2>
+    <p class="role-org-intro">
+      Search roles, select multiple entries, and consolidate them into a single target role.
+      Consolidations apply across Rankings and Game, including future cache refreshes.
+    </p>
+
+    {% if not has_data %}
+    <div class="empty-state" role="status">
+      <p>No cache found. Run <code>rank_all_people.py --refresh</code> to build the cache, then reload this page.</p>
+    </div>
+    {% else %}
+    <div class="two-col role-org-layout">
+      <div class="role-org-left">
+        <h3>Select source roles</h3>
+        <label class="search-label" for="role-org-search">
+          <span class="visually-hidden">Search roles</span>
+          <input type="search" id="role-org-search" class="search-input" placeholder="Search roles..." autocomplete="off">
+        </label>
+        <p class="role-meta" id="role-org-selected-meta">0 selected</p>
+        <ul class="role-org-source-list" id="role-org-source-list"></ul>
+      </div>
+
+      <div class="role-org-right">
+        <h3>Consolidate selected roles</h3>
+        <label class="role-org-target-label" for="role-org-target">
+          Target role
+          <input type="text" id="role-org-target" class="search-input" placeholder="Type or paste target role">
+        </label>
+        <button type="button" id="role-org-consolidate-btn" class="role-org-btn">Consolidate selected roles</button>
+        <p class="role-meta" id="role-org-feedback" aria-live="polite"></p>
+
+        <h3>Current and future consolidations</h3>
+        <p class="role-meta" id="role-org-summary-meta"></p>
+        <div id="role-org-groups"></div>
+      </div>
+    </div>
+    {% endif %}
+  </section>
+{% endblock %}
+{% block scripts %}
+  {% if has_data %}
+  <script>
+  (function() {
+    window.CAMDRAM_ROLE_ORG = {
+      bootstrapUrl: "{{ role_org_bootstrap_url }}",
+      updateUrl: "{{ role_org_update_url }}",
+      deleteUrl: "{{ role_org_delete_url }}",
+    };
+    var s = document.createElement("script");
+    s.src = "{{ static_role_org_js_url }}";
+    document.body.appendChild(s);
+  })();
+  </script>
+  {% endif %}
+{% endblock %}

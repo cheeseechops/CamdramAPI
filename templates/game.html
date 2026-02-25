@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+{% block title %}Role Guessing Game — Camdram Rankings{% endblock %}
+{% block content %}
+  <section class="game-page">
+    <h2>Camdram Tech Games</h2>
+    <p class="game-intro">All games use only Tech roles (top 20 most-done Tech roles), and only people whose most recent role was within the last year.</p>
+
+    {% if not has_data %}
+    <div class="empty-state" role="status">
+      <p>No cache found. Run <code>rank_all_people.py --refresh</code> to build the cache, then reload this page.</p>
+    </div>
+    {% else %}
+    <div class="game-card" id="game-card">
+      <div class="game-modes" id="game-modes" role="tablist" aria-label="Game modes">
+        <button type="button" class="game-mode-btn active" data-mode="most-role" aria-selected="true">Who did it most?</button>
+        <button type="button" class="game-mode-btn" data-mode="higher-count" aria-selected="false">Higher count</button>
+        <button type="button" class="game-mode-btn" data-mode="top-role" aria-selected="false">Top role for person</button>
+      </div>
+      <p class="game-score" id="game-score">Score: <strong>0/0</strong></p>
+      <p class="game-role-label" id="game-prompt">Who has done this role most?</p>
+      <h3 class="game-role" id="game-role">Loading…</h3>
+      <div class="game-options" id="game-options"></div>
+      <p class="game-feedback" id="game-feedback" aria-live="polite"></p>
+      <button type="button" class="game-next-btn" id="game-next-btn" hidden>Next role</button>
+    </div>
+    {% endif %}
+  </section>
+{% endblock %}
+{% block scripts %}
+  {% if has_data %}
+  <script>
+  (function() {
+    var bootstrapUrl = "{{ game_bootstrap_url }}";
+    var gameJsUrl = "{{ static_game_js_url }}";
+    fetch(bootstrapUrl).then(function(r) { return r.json(); }).then(function(d) {
+      window.CAMDRAM_GAME = d;
+      var s = document.createElement("script");
+      s.src = gameJsUrl;
+      document.body.appendChild(s);
+    });
+  })();
+  </script>
+  {% endif %}
+{% endblock %}

@@ -1,0 +1,13 @@
+config.py
+*_cache.json
+__pycache__/
+*.pyc
+.env
+.env.local
+.venv/
+venv/
+.python-version
+.pytest_cache/
+.mypy_cache/
+.DS_Store
+*.log

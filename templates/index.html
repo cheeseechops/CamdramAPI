@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}By person & by role — Camdram Rankings{% endblock %}
+{% block content %}
+  <div class="tabs">
+    <button type="button" class="tab-btn active" data-tab="by-person" aria-selected="true">By person</button>
+    <button type="button" class="tab-btn" data-tab="by-role" aria-selected="false">By role</button>
+    <button type="button" class="tab-btn" data-tab="by-society" aria-selected="false">By society</button>
+    <button type="button" class="tab-btn" data-tab="by-venue" aria-selected="false">By venue</button>
+  </div>
+
+  {% if not has_data %}
+  <div class="empty-state" role="status">
+    <p>No cache found. Run <code>rank_all_people.py --refresh</code> (or use the desktop app) to build the cache, then copy <code>rank_all_people_cache.json</code> into this project.</p>
+  </div>
+  {% else %}
+
+  <section id="by-person" class="tab-panel active" aria-hidden="false">
+    <div class="panel-header">
+      <h2>People by total roles</h2>
+      <label class="search-label">
+        <span class="visually-hidden">Search by name</span>
+        <input type="search" id="search-person" class="search-input" placeholder="Search by name…" autocomplete="off">
+      </label>
+      <label class="filter-checkbox-label">
+        <input type="checkbox" id="active-only">
+        <span>Only currently active</span>
+      </label>
+    </div>
+    <div class="table-wrap table-wrap--virtual" id="people-table-wrap">
+      <div class="table-scroll" id="people-scroll">
+        <div class="table-scroll-inner" id="people-scroll-inner">
+        <table class="data-table sortable" id="people-table" data-sort-col="count" data-sort-dir="desc">
+          <thead>
+            <tr>
+              <th scope="col" data-col="count" data-type="number">Roles</th>
+              <th scope="col" data-col="num_shows" data-type="number">Shows</th>
+              <th scope="col" data-col="num_titles" data-type="number">Role types</th>
+              <th scope="col" data-col="name" data-type="string">Name</th>
+              <th scope="col" data-col="last_credit_date" data-type="date">Credit range</th>
+              <th scope="col" data-col="top_role" data-type="toprole">Top role</th>
+            </tr>
+          </thead>
+          <tbody id="people-tbody">
+            <tr class="virtual-spacer" id="people-spacer" aria-hidden="true"><td colspan="6"></td></tr>
+          </tbody>
+        </table>
+        </div>
+      </div>
+      <p class="table-loading" id="people-loading" aria-live="polite">Loading…</p>
+    </div>
+    <p class="table-meta" id="people-meta">Showing <span id="people-count">0</span> of <span id="people-total">0</span> people</p>
+  </section>
+
+  <section id="by-role" class="tab-panel" aria-hidden="true">
+    <div class="two-col">
+      <div class="role-list-wrap">
+        <h2>Select a role</h2>
+        <label class="filter-checkbox-label">
+          <input type="checkbox" id="include-count1-roles">
+          <span>Include count 1 entries</span>
+        </label>
+        <label class="filter-checkbox-label">
+          <input type="checkbox" id="active-only-roles">
+          <span>Only currently active</span>
+        </label>
+        <ul class="role-list" id="role-list" role="listbox">
+          {% for r in roles %}
+          <li class="role-item" data-role="{{ r.name|e }}" role="option" tabindex="0">{{ r.name }} <span class="role-n">({{ r.num_people }})</span></li>
+          {% endfor %}
+        </ul>
+      </div>
+      <div class="role-rank-wrap">
+        <h2 id="role-rank-title">Ranking</h2>
+        <p class="role-meta" id="role-meta">Choose a role from the list.</p>
+        <div class="table-wrap">
+          <table class="data-table" id="role-rank-table">
+            <thead>
+              <tr>
+                <th scope="col">Rank</th>
+                <th scope="col">Name</th>
+                <th scope="col">Count</th>
+              </tr>
+            </thead>
+            <tbody></tbody>
+          </table>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="by-society" class="tab-panel" aria-hidden="true">
+    <div class="panel-header">
+      <h2>Top people by society (shows)</h2>
+    </div>
+    <div class="society-grid" id="society-grid"></div>
+  </section>
+
+  <section id="by-venue" class="tab-panel" aria-hidden="true">
+    <div class="panel-header">
+      <h2>Top people by venue (shows)</h2>
+    </div>
+    <div class="venue-grid" id="venue-grid"></div>
+  </section>
+
+  {% endif %}
+{% endblock %}
+{% block scripts %}
+  {% if has_data %}
+  <script>
+  (function(){
+    var bootstrapUrl = "{{ bootstrap_url }}";
+    var rankingsUrl = "{{ rankings_url }}";
+    var rolesUrl = "{{ roles_url }}";
+    var personUrlTemplate = "{{ person_url_template }}";
+    var appJsUrl = "{{ static_js_url }}";
+    fetch(bootstrapUrl).then(function(r){ return r.json(); }).then(function(d){
+      d.rankingsUrl = rankingsUrl;
+      d.rolesUrl = rolesUrl;
+      d.personUrlTemplate = personUrlTemplate;
+      window.CAMDRAM = d;
+      var s = document.createElement("script");
+      s.src = appJsUrl;
+      document.body.appendChild(s);
+    });
+  })();
+  </script>
+  {% endif %}
+{% endblock %}
