@@ -22,6 +22,7 @@ CACHE_FILE = Path(__file__).parent / "rank_all_people_cache.json"
 CACHE_TTL_HOURS = 24 * 7  # 1 week
 CURRENT_LOOKBACK_DAYS = 60
 FUTURE_LOOKAHEAD_DAYS = 730
+DEFAULT_SEARCH_BACK_TO_YEAR = 1994
 
 
 def _slug_year_hint(slug: str | None) -> int | None:
@@ -444,7 +445,10 @@ def main() -> None:
     parser.add_argument(
         "--refresh",
         action="store_true",
-        help="Refetch full historical dataset.",
+        help=(
+            "Refetch full historical dataset. Also performs year-search crawl "
+            f"(default back to {DEFAULT_SEARCH_BACK_TO_YEAR})."
+        ),
     )
     parser.add_argument(
         "--update-current-future",
@@ -579,8 +583,13 @@ def main() -> None:
             cache_from_str = diary_from
         print(f"Diary crawl added {added} new shows.")
 
-    if args.crawl_search_back_to_year and shows:
-        start_year = max(1900, int(args.crawl_search_back_to_year))
+    # For full refresh, always include year-search crawl so sparse/missed
+    # listings found via /search are merged in automatically.
+    should_crawl_search = bool(args.crawl_search_back_to_year) or force_refresh
+    did_crawl_search = False
+    if should_crawl_search and shows:
+        start_year = args.crawl_search_back_to_year or DEFAULT_SEARCH_BACK_TO_YEAR
+        start_year = max(1900, int(start_year))
         end_year = datetime.now().year
         if client is None:
             client = CamdramClient()
@@ -589,6 +598,7 @@ def main() -> None:
         if str(start_year) + "-01-01" < cache_from_str:
             cache_from_str = str(start_year) + "-01-01"
         print(f"Year-search crawl added {added} new shows.")
+        did_crawl_search = True
 
     if args.update_current_future and shows:
         if client is None:
@@ -731,6 +741,18 @@ def main() -> None:
             page += 1
             if page > 500:  # Safety limit
                 break
+
+    if should_crawl_search and shows and not did_crawl_search:
+        start_year = args.crawl_search_back_to_year or DEFAULT_SEARCH_BACK_TO_YEAR
+        start_year = max(1900, int(start_year))
+        end_year = datetime.now().year
+        if client is None:
+            client = CamdramClient()
+            client.authenticate()
+        added = _merge_shows_from_year_search(client, shows, start_year, end_year)
+        if str(start_year) + "-01-01" < cache_from_str:
+            cache_from_str = str(start_year) + "-01-01"
+        print(f"Year-search crawl added {added} new shows.")
 
     print(f"Found {len(shows)} shows. Fetching roles ({MAX_WORKERS} parallel)...\n")
 

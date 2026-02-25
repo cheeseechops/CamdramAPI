@@ -6,19 +6,26 @@
   <title>{% block title %}Camdram Rankings{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Source+Sans+3:wght@400;500;600&display=swap" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
 <body>
-  <header class="site-header">
-    <div class="wrap">
-      <h1 class="site-title"><a href="{{ url_for('index') }}">Camdram Rankings</a></h1>
-      <p class="site-tagline">Cambridge theatre — people & roles</p>
-      <nav class="site-nav" aria-label="Primary">
-        <a href="{{ url_for('index') }}">Rankings</a>
-        <a href="{{ url_for('game') }}">Game</a>
-        <a href="{{ url_for('role_organisation') }}">Role organisation</a>
-      </nav>
+  <header class="site-header" role="banner">
+    <div class="brand-bar">
+      <div class="wrap brand-wrap">
+        <h1 class="site-title"><a href="{{ url_for('index') }}">CAMDRAMETRICS</a></h1>
+        <p class="site-tagline">Rankings and analytics for Cambridge theatre credits</p>
+      </div>
+    </div>
+
+    <div class="primary-bar">
+      <div class="wrap">
+        <nav class="site-nav" aria-label="Primary">
+          <a href="{{ url_for('index') }}" class="{% if request.endpoint == 'index' %}active{% endif %}">Home</a>
+          <a href="{{ url_for('game') }}" class="{% if request.endpoint == 'game' %}active{% endif %}">Game</a>
+          <a href="{{ url_for('role_organisation') }}" class="{% if request.endpoint == 'role_organisation' %}active{% endif %}">Role Organisation</a>
+        </nav>
+      </div>
     </div>
   </header>
   <main class="main wrap">
